@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스마트 AI 견적서 자동 생성기 | Smart AI Invoice</title>
+  <meta name="description" content="음성 또는 아무말 텍스트를 입력하면 AI가 한국 표준 규격의 견적서를 자동으로 완벽하게 작성해 주는 스마트 웹 서비스입니다." />
+  
+  <!-- 스타일시트 -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/invoice.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+</head>
+<body>
+
+  <!-- 1. 상단 글로벌 헤더 -->
+  <header class="app-header">
+    <div class="brand-wrap">
+      <div class="brand-icon">📑</div>
+      <div class="brand-title">
+        <span>스마트 AI 견적서</span>
+        <span class="brand-badge">Auto-Invoice</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <div class="status-pill" id="header-status-pill">
+        <span class="status-dot" id="header-status-dot"></span>
+        <span id="header-status-text">API 키 설정 필요</span>
+      </div>
+      <button class="btn-header" id="btn-supplier-settings" title="내 사업자 정보 및 직인 설정">
+        🏢 <span>공급자 정보</span>
+      </button>
+      <button class="btn-header" id="btn-settings" title="OpenRouter AI 모델 및 API 키 설정">
+        ⚙️ <span>AI 설정</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. 메인 2단 분할 레이아웃 -->
+  <main class="app-container">
+    
+    <!-- [좌측 패널] 스마트 입력 시스템 (텍스트, 음성, AI 컨트롤) -->
+    <aside class="app-sidebar">
+      <div class="sidebar-content">
+        
+        <!-- [핵심] OpenRouter API Key 및 모델 간편 입력 카드 -->
+        <section class="control-card api-key-card" style="border-color: rgba(59, 130, 246, 0.4); background: rgba(30, 41, 59, 0.9);">
+          <div class="card-title">
+            <span style="color: #60a5fa; display: flex; align-items: center; gap: 6px;">
+              🔑 <strong>OpenRouter API 키 설정</strong>
+            </span>
+            <span class="brand-badge" id="side-api-status" style="font-size: 10.5px;">미설정</span>
+          </div>
+          
+          <div style="display: flex; gap: 6px; margin-top: 4px;">
+            <input 
+              type="password" 
+              id="side-api-key-input" 
+              class="form-control" 
+              placeholder="sk-or-v1-xxxxxxxx..." 
+              style="flex: 1; font-size: 12px; padding: 7px 10px;"
+            />
+            <button class="btn-primary" id="btn-side-save-key" style="padding: 6px 12px; font-size: 12px; white-space: nowrap;">
+              저장
+            </button>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+            <span style="font-size: 11px; color: var(--text-muted); white-space: nowrap;">모델:</span>
+            <select id="side-model-select" class="form-control" style="font-size: 11.5px; padding: 4px 8px; height: 28px; flex: 1;"></select>
+          </div>
+        </section>
+
+        <!-- 음성(STT) 입력 어시스턴트 -->
+        <section class="voice-assistant-box">
+          <div class="mic-btn-container">
+            <button class="mic-button" id="mic-button" title="마이크를 클릭하여 말로 입력하세요">
+              🎤
+            </button>
+            <div class="mic-pulse-ring"></div>
+          </div>
+          <div class="voice-status-text" id="voice-status-text">마이크를 눌러 음성으로 말씀해 보세요</div>
+          <div class="voice-helper-text">"알파솔루션에 웹사이트 제작 400만원, 유지보수 3개월 150만원 견적 넣어줘"</div>
+        </section>
+
+        <!-- 텍스트 입력 구역 -->
+        <section class="control-card">
+          <div class="text-input-wrapper">
+            <div class="input-label-row">
+              <span class="input-label">✍️ 비정형 내용 입력 (아무말/메일/메모)</span>
+              <button class="btn-clear-text" id="btn-clear-text">지우기</button>
+            </div>
+            <textarea 
+              class="prompt-textarea" 
+              id="prompt-input" 
+              placeholder="자유롭게 입력하세요. 예: 이메일 본문, 카카오톡 메시지, 두서없는 메모, 회의록 등... AI가 알아서 항목, 단가, 수량을 분류하여 견적서를 채워줍니다."
+            ></textarea>
+          </div>
+
+          <!-- 원클릭 예시 템플릿 -->
+          <div class="sample-chips-container">
+            <span class="sample-chips-label">원클릭 테스트 예시:</span>
+            <div class="sample-chips">
+              <button class="sample-chip" data-sample="interior">🏢 인테리어 공사</button>
+              <button class="sample-chip" data-sample="webdev">💻 웹/AI 개발 외주</button>
+              <button class="sample-chip" data-sample="supplies">📦 사무 소모품 납품</button>
+            </div>
+          </div>
+
+          <!-- AI 생성 실행 버튼 -->
+          <button class="btn-generate" id="btn-generate">
+            <span class="spinner"></span>
+            <span class="btn-text">견적서 자동 생성 (AI 변환)</span>
+            <span>⚡</span>
+          </button>
+
+          <!-- 진행 상태 알림 -->
+          <div class="progress-status-box" id="progress-box">
+            <span>⏳</span>
+            <span id="progress-text">AI 분석 중...</span>
+          </div>
+        </section>
+
+        <!-- 사용 안내 및 팁 -->
+        <div class="control-card">
+          <div class="card-title">💡 스마트 기능 안내</div>
+          <div style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+            • <strong>실시간 인라인 편집</strong>: 우측 견적서의 글자나 숫자를 클릭해 언제든 직접 수정할 수 있습니다.<br/>
+            • <strong>자동 연산</strong>: 수량과 단가를 바꾸면 공급가액, 세액(10%), 총합계, 한글 금액이 즉시 재계산됩니다.<br/>
+            • <strong>A4 인쇄 최적화</strong>: 상단의 '인쇄 / PDF 저장' 버튼을 누르면 실물 서식 그대로 출력됩니다.
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- [우측 패널] 한국 표준 견적서 실시간 프리뷰 뷰 -->
+    <section class="invoice-wrapper">
+      
+      <!-- 상단 액션 툴바 -->
+      <div class="invoice-screen-toolbar">
+        <div class="title">
+          <span>📋 견적서 실시간 양식</span>
+        </div>
+        <div class="actions">
+          <button class="toolbar-btn" id="btn-add-row" title="품목 새 행 추가">
+            <span>➕</span> <span>행 추가</span>
+          </button>
+          <button class="toolbar-btn" id="btn-export-hwpx" title="한글(HWPX) 파일 다운로드" style="border-color: #0284c7; color: #0369a1;">
+            <span>📄</span> <strong>한글(HWPX)</strong>
+          </button>
+          <button class="toolbar-btn" id="btn-export-csv" title="엑셀 호환 CSV 파일 다운로드">
+            <span>📊</span> <span>엑셀(CSV)</span>
+          </button>
+          <button class="toolbar-btn" id="btn-reset" title="내용 초기화">
+            <span>🔄</span> <span>초기화</span>
+          </button>
+          <button class="toolbar-btn primary" id="btn-print" title="A4 용지 인쇄 또는 PDF 다운로드">
+            <span>🖨️</span> <span>인쇄 / PDF 저장</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 실제 A4 규격 견적서 페이퍼 -->
+      <article class="invoice-paper" id="invoice-paper-element">
+        <div class="invoice-inner">
+          
+          <!-- 1. 최상단 문서번호 및 제목 -->
+          <div class="invoice-top-bar">
+            <div class="invoice-doc-no">
+              <span class="label">No.</span>
+              <span class="value editable" id="invoice-doc-no" contenteditable="true"></span>
+            </div>
+          </div>
+
+          <div class="invoice-main-title">
+            <h1>견 적 서</h1>
+          </div>
+
+          <!-- 2. 수신인 영역 & 공급자 정보 테이블 (2분할) -->
+          <div class="invoice-header-grid">
+            
+            <!-- 좌측: 날짜, 수신인, 견적문구 -->
+            <div class="recipient-section">
+              <div class="invoice-date-row">
+                <span class="editable" id="date-year" contenteditable="true">2026</span>년 
+                <span class="editable" id="date-month" contenteditable="true">3</span>월 
+                <span class="editable" id="date-day" contenteditable="true">15</span>일
+              </div>
+              <div class="recipient-name-box">
+                <div class="recipient-input-wrap">
+                  <span class="recipient-name editable" id="recipient-name" contenteditable="true" placeholder="수신자 상호 입력"></span>
+                  <span class="suffix">귀하</span>
+                </div>
+              </div>
+              <div class="invoice-proclamation">
+                아래와 같이 견적합니다.
+              </div>
+            </div>
+
+            <!-- 우측: 공급자(발행처) 정보 테이블 -->
+            <div class="supplier-table-container">
+              <table class="supplier-table">
+                <tbody>
+                  <tr>
+                    <th rowspan="5" class="vertical-header">공<br/>급<br/>자</th>
+                    <th class="sub-header">등록번호</th>
+                    <td colspan="3" class="editable-cell" id="supplier-reg-no" contenteditable="true">123-45-67890</td>
+                  </tr>
+                  <tr>
+                    <th class="sub-header">상호(법인명)</th>
+                    <td class="editable-cell" id="supplier-company" contenteditable="true">스마트에이아이솔루션</td>
+                    <th class="sub-header-small">성명</th>
+                    <td>
+                      <div class="ceo-stamp-wrap">
+                        <span class="editable-cell" id="supplier-ceo" contenteditable="true">홍길동</span>
+                        <div class="stamp-mark" id="stamp-container" title="클릭하여 도장 이미지 등록">
+                          <span>(인)</span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th class="sub-header">사업장주소</th>
+                    <td colspan="3" class="editable-cell" id="supplier-addr" contenteditable="true">서울특별시 강남구 테헤란로 123, 5층</td>
+                  </tr>
+                  <tr>
+                    <th class="sub-header">업 태</th>
+                    <td class="editable-cell" id="supplier-biz-type" contenteditable="true">정보통신업</td>
+                    <th class="sub-header-small">종목</th>
+                    <td class="editable-cell" id="supplier-biz-item" contenteditable="true">소프트웨어 개발</td>
+                  </tr>
+                  <tr>
+                    <th class="sub-header">전화번호</th>
+                    <td colspan="3" class="editable-cell" id="supplier-tel" contenteditable="true">02-555-0199</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          <!-- 3. 합계 금액 바 (공급가액 + 세액) -->
+          <div class="total-amount-bar">
+            <div class="total-amount-title">
+              <div class="main-txt">합 계 금 액</div>
+              <div class="sub-txt">(공급가액+세액)</div>
+            </div>
+            <div class="total-amount-display">
+              <div class="korean-amount-text">
+                <span class="amount-val" id="korean-total-amount">일금 영 원정</span>
+              </div>
+              <div class="number-amount-text" id="number-total-amount">
+                (₩ 0 )
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. 품목 상세 테이블 (최소 16행 고정) -->
+          <div class="items-table-wrap">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th class="col-name">품 명</th>
+                  <th class="col-spec">규 격</th>
+                  <th class="col-qty">수 량</th>
+                  <th class="col-unit-price">단 가</th>
+                  <th class="col-supply-price">공 급 가 액</th>
+                  <th class="col-tax">세 액</th>
+                  <th class="col-remark">비 고</th>
+                </tr>
+              </thead>
+              <tbody id="invoice-items-body">
+                <!-- JS에 의해 기본 16행 렌더링 -->
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2" class="total-label">계</td>
+                  <td id="footer-total-qty" style="text-align: right;">0</td>
+                  <td style="text-align: right;"></td>
+                  <td id="footer-total-supply" style="text-align: right;">0</td>
+                  <td id="footer-total-tax" style="text-align: right;">0</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+        </div>
+      </article>
+
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       모달 1: OpenRouter AI 모델 및 API Key 설정
+       ========================================== -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>⚙️ OpenRouter AI 연동 설정</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="api-key-input">OpenRouter API Key</label>
+          <input 
+            type="password" 
+            id="api-key-input" 
+            class="form-control" 
+            placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxx" 
+            autocomplete="off"
+          />
+          <div class="form-help">
+            API 키는 외부 서버로 전송되지 않고 본인 웹 브라우저의 로컬 저장소(localStorage)에만 안전하게 보관됩니다.
+            <a href="https://openrouter.ai/keys" target="_blank" style="color: #60a5fa; text-decoration: underline;">OpenRouter 키 발급받기</a>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="model-select">AI 모델 선택 (초저비용 가성비 추천)</label>
+          <select id="model-select" class="form-control"></select>
+          <input 
+            type="text" 
+            id="custom-model-input" 
+            class="form-control" 
+            placeholder="직접 모델 ID 입력 (예: deepseek/deepseek-chat)" 
+            style="display: none; margin-top: 8px;" 
+          />
+          <div class="form-help">
+            기본 추천 모델인 <strong>Google Gemini 2.5 Flash</strong> 및 <strong>DeepSeek V3</strong>는 매우 저렴한 단가로 뛰어난 한국어 견적서 JSON 구조화 성능을 제공합니다.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary modal-cancel-btn">취소</button>
+        <button class="btn-primary" id="btn-save-settings">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       모달 2: 공급자 (내 사업자) 정보 및 직인 설정
+       ========================================== -->
+  <div class="modal-overlay" id="supplier-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>🏢 공급자(발행처) 정보 설정</h3>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>사업자 등록번호</label>
+          <input type="text" id="modal-reg-no" class="form-control" placeholder="123-45-67890" />
+        </div>
+        <div class="form-group">
+          <label>상호 (법인명)</label>
+          <input type="text" id="modal-company" class="form-control" placeholder="회사명 입력" />
+        </div>
+        <div class="form-group">
+          <label>대표자 성명</label>
+          <input type="text" id="modal-ceo" class="form-control" placeholder="대표자명 입력" />
+        </div>
+        <div class="form-group">
+          <label>사업장 주소</label>
+          <input type="text" id="modal-addr" class="form-control" placeholder="도로명 주소" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>업태</label>
+            <input type="text" id="modal-biz-type" class="form-control" placeholder="정보통신업 등" />
+          </div>
+          <div class="form-group">
+            <label>종목</label>
+            <input type="text" id="modal-biz-item" class="form-control" placeholder="소프트웨어 등" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>전화번호</label>
+          <input type="text" id="modal-tel" class="form-control" placeholder="02-555-0199" />
+        </div>
+        <div class="form-group">
+          <label>회사 직인 / 도장 이미지 (선택)</label>
+          <input type="file" id="stamp-file-input" class="form-control" accept="image/*" />
+          <div class="form-help">투명 배경의 PNG 직인 이미지를 업로드하면 견적서 (인) 자리에 날인됩니다.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary modal-cancel-btn">취소</button>
+        <button class="btn-primary" id="btn-save-supplier">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 메시지 컨테이너 -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- 라이브러리 및 자바스크립트 로드 -->
+  <script src="js/lib/jszip.min.js"></script>
+  <script src="js/hwpx-generator.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/speech.js"></script>
+  <script src="js/ai-service.js"></script>
+  <script src="js/invoice-manager.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

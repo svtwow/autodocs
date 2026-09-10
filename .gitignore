@@ -1,0 +1,11 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs & scratch
+*.log
+scratch/
+.system_generated/
+
+# Node
+node_modules/
