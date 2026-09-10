@@ -1,0 +1,12 @@
+# Vercel 배포 시 제외할 로컬 파일 및 보안 파일 목록
+.env
+.env.*
+*.env
+node_modules
+.git
+.gitignore
+scratch/
+.system_generated/
+*.log
+.DS_Store
+Thumbs.db

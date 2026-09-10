@@ -104,7 +104,32 @@ npm start
 
 ## ☁️ 배포 가이드 (Cloud Deployment)
 
-### Vercel 배포
+### 🚀 Vercel 직접 배포 (GitHub 거치지 않고 바로 배포)
+
+깃허브(Git commit/push)를 거치지 않고 로컬 터미널에서 명령 한 줄로 즉시 Vercel에 배포할 수 있습니다:
+
+#### 1) 최초 1회 Vercel 로그인 및 프로젝트 연결
+```bash
+# Vercel 계정 로그인 (브라우저 인증)
+npx vercel login
+
+# 현재 프로젝트를 Vercel 프로젝트에 연동
+npx vercel link
+# (질문 프롬프트가 나오면 본인 계정 선택 및 기존 프로젝트 연결 진행)
+```
+
+#### 2) 원클릭 즉시 배포
+```bash
+# [추천] 실서버(Production)로 즉시 다이렉트 배포
+npm run deploy:prod
+
+# 또는 테스트용 임시 Preview 주소로 배포
+npm run deploy
+```
+
+> **보안 안내**: `.vercelignore` 파일이 설정되어 있어 로컬의 `.env` 파일이나 민감한 소스코드가 Vercel로 업로드되지 않고 완벽하게 보호됩니다.
+
+### 🌐 일반 Vercel GitHub 연동 배포 (대안)
 1. GitHub 저장소(`autodocs`)를 Vercel에 임포트합니다.
 2. Vercel 프로젝트 대시보드의 **Settings > Environment Variables**로 이동합니다.
 3. 변수명 `OPENROUTER_API_KEY`에 본인의 OpenRouter API 키 값을 입력하고 저장합니다.
