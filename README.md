@@ -135,6 +135,28 @@ npm run deploy
 3. 변수명 `OPENROUTER_API_KEY`에 본인의 OpenRouter API 키 값을 입력하고 저장합니다.
 4. 배포를 진행하면 별도의 서버 설정 없이 즉시 운영 상태가 됩니다 (`vercel.json` 내장).
 
+### ☁️ Cloudflare Pages 배포 (추천)
+
+Cloudflare의 초고속 전 세계 엣지 네트워크에 무료로 배포할 수 있습니다:
+
+#### 1) 최초 1회 Cloudflare 로그인
+```bash
+npx wrangler login
+# (브라우저가 열리면 Cloudflare 계정 로그인 및 승인)
+```
+
+#### 2) 원클릭 배포
+```bash
+npm run deploy:cf
+```
+배포가 완료되면 `https://autodocs-invoice.pages.dev` 형태의 주소가 즉시 발급됩니다!
+
+#### 3) 환경변수 설정
+Cloudflare 대시보드에서:
+1. **Compute (Workers & Pages)** ➔ `autodocs-invoice` 프로젝트 선택
+2. **Settings** ➔ **Variables and Secrets**로 이동
+3. `OPENROUTER_API_KEY` 변수를 추가하고 본인의 OpenRouter 키 값을 입력합니다.
+
 ### 일반 Node.js 서버 / 클라우드 호스팅 (Render, Railway, AWS 등)
 - 환경변수에 `OPENROUTER_API_KEY`를 추가하고 `npm start`로 구동합니다.
 

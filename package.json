@@ -7,7 +7,9 @@
     "start": "node server.js",
     "dev": "node server.js",
     "deploy": "npx vercel",
-    "deploy:prod": "npx vercel --prod"
+    "deploy:prod": "npx vercel --prod",
+    "deploy:cf": "npx wrangler pages deploy public --project-name=autodocs-invoice",
+    "dev:cf": "npx wrangler pages dev public"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
