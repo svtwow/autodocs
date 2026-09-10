@@ -7,5 +7,9 @@ Thumbs.db
 scratch/
 .system_generated/
 
+# Environment
+.env
+.env.local
+
 # Node
 node_modules/

@@ -3,9 +3,11 @@
  */
 
 const CONFIG = {
-  OPENROUTER_API_URL: 'https://openrouter.ai/api/v1/chat/completions',
+  API_ENDPOINTS: {
+    EXTRACT: '/api/extract',
+    STATUS: '/api/status'
+  },
   STORAGE_KEYS: {
-    API_KEY: 'invoice_ai_openrouter_key',
     MODEL: 'invoice_ai_selected_model',
     SUPPLIER_INFO: 'invoice_ai_supplier_info',
     STAMP_IMAGE: 'invoice_ai_stamp_img'

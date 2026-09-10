@@ -21,41 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // 모달 요소들
   const settingsModal = document.getElementById('settings-modal');
   const supplierModal = document.getElementById('supplier-modal');
-  const apiKeyInput = document.getElementById('api-key-input');
   const modelSelect = document.getElementById('model-select');
   const customModelInput = document.getElementById('custom-model-input');
   const btnSaveSettings = document.getElementById('btn-save-settings');
   const btnSaveSupplier = document.getElementById('btn-save-supplier');
   const stampFileInput = document.getElementById('stamp-file-input');
 
-  // 사이드바 내 빠른 API Key 입력 및 모델 필드
-  const sideApiKeyInput = document.getElementById('side-api-key-input');
-  const btnSideSaveKey = document.getElementById('btn-side-save-key');
+  // 사이드바 AI 모델 및 상태 요소
   const sideModelSelect = document.getElementById('side-model-select');
   const sideApiStatus = document.getElementById('side-api-status');
 
-  // 2. 초기 렌더링 및 상태 반영
+  // 2. 초기 렌더링 및 백엔드 AI 서버 상태 반영
   invoiceManager.render();
   initModelSelect();
-  checkApiKeyStatus();
-
-  // 사이드바 키 저장 이벤트
-  if (btnSideSaveKey) {
-    btnSideSaveKey.addEventListener('click', () => {
-      const key = sideApiKeyInput.value.trim();
-      if (!key) {
-        showToast('API 키를 입력해 주세요.', 'error');
-        sideApiKeyInput.focus();
-        return;
-      }
-      aiService.setApiKey(key);
-      if (sideModelSelect) {
-        aiService.setModel(sideModelSelect.value);
-      }
-      checkApiKeyStatus();
-      showToast('OpenRouter API Key가 성공적으로 저장되었습니다!', 'success');
-    });
-  }
+  updateServerStatus();
 
   if (sideModelSelect) {
     sideModelSelect.addEventListener('change', (e) => {
@@ -127,9 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!aiService.hasApiKey()) {
-      showToast('OpenRouter API Key를 먼저 등록해 주세요.', 'error');
-      openModal(settingsModal);
-      return;
+      await updateServerStatus();
+      if (!aiService.hasApiKey()) {
+        showToast('서버에 OPENROUTER_API_KEY 환경변수가 설정되지 않았습니다. .env 파일을 확인해 주세요.', 'error');
+        return;
+      }
     }
 
     // 로딩 UI 활성화
@@ -307,18 +288,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnSaveSettings.addEventListener('click', () => {
-    const key = apiKeyInput.value.trim();
     let selectedModel = modelSelect.value;
     if (selectedModel === 'custom') {
       selectedModel = customModelInput.value.trim() || CONFIG.DEFAULT_MODEL;
     }
 
-    aiService.setApiKey(key);
     aiService.setModel(selectedModel);
+    if (sideModelSelect) sideModelSelect.value = selectedModel;
 
-    checkApiKeyStatus();
     closeModal(settingsModal);
-    showToast('AI 설정이 저장되었습니다.', 'success');
+    showToast('AI 모델 설정이 저장되었습니다.', 'success');
   });
 
   // 공급자 정보 모달
@@ -429,35 +408,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function checkApiKeyStatus() {
+  async function updateServerStatus() {
     const dot = document.getElementById('header-status-dot');
     const text = document.getElementById('header-status-text');
-    const currentKey = aiService.getApiKey();
 
-    if (currentKey) {
+    const statusData = await aiService.checkServerStatus();
+
+    if (statusData && statusData.hasKey) {
       if (dot) dot.classList.add('active');
-      if (text) text.innerText = 'AI 연동 준비됨';
+      if (text) text.innerText = 'AI 서버 연동 완료';
       
       if (sideApiStatus) {
-        sideApiStatus.innerText = '등록완료';
+        sideApiStatus.innerText = '서버 보안 연동';
         sideApiStatus.style.background = 'rgba(16, 185, 129, 0.2)';
         sideApiStatus.style.color = '#34d399';
         sideApiStatus.style.borderColor = 'rgba(16, 185, 129, 0.4)';
       }
-      if (sideApiKeyInput) sideApiKeyInput.value = currentKey;
-      if (apiKeyInput) apiKeyInput.value = currentKey;
     } else {
       if (dot) dot.classList.remove('active');
-      if (text) text.innerText = 'API 키 설정 필요';
+      if (text) text.innerText = '서버 키 설정 필요 (.env)';
 
       if (sideApiStatus) {
-        sideApiStatus.innerText = '미설정';
+        sideApiStatus.innerText = '키 설정 필요';
         sideApiStatus.style.background = 'rgba(245, 158, 11, 0.2)';
         sideApiStatus.style.color = '#fbbf24';
         sideApiStatus.style.borderColor = 'rgba(245, 158, 11, 0.4)';
       }
-      if (sideApiKeyInput) sideApiKeyInput.value = '';
-      if (apiKeyInput) apiKeyInput.value = '';
     }
   }
 
