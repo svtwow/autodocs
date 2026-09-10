@@ -10,12 +10,12 @@ const app = require('./api/index.js');
 
 const PORT = process.env.PORT || 3000;
 
-// 정적 웹 파일 서빙 (HTML, CSS, JS, Assets)
-app.use(express.static(path.join(__dirname)));
+// 정적 웹 파일 서빙 (HTML, CSS, JS, Assets는 public/ 폴더에서 서빙)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 루트 접속 시 index.html 서빙 명시
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // 로컬 서버 실행

@@ -47,24 +47,26 @@
 ```
 autodocs/
 ├── .env.example            # 환경변수 템플릿 (OPENROUTER_API_KEY)
-├── server.js               # 백엔드 Express 서버 (API 키 은닉, /api/extract, /api/status)
-├── vercel.json             # Vercel 등 클라우드 서버리스 배포 설정
+├── api/
+│   └── index.js            # Vercel Serverless Function 엔트리포인트 (/api/status, /api/extract)
+├── server.js               # 로컬 개발 및 Node.js 웹 서버
+├── vercel.json             # Vercel 서버리스 라우팅 설정
 ├── package.json            # Node.js 프로젝트 설정 및 의존성
-├── index.html              # 메인 애플리케이션 진입점 (마크업, 2단 스플릿 레이아웃)
-├── css/
-│   ├── style.css           # 모던 슬레이트/인디고 UI, 마이크 펄스 애니메이션, 모달 스타일
-│   └── invoice.css         # 표준 견적서 A4 인쇄/화면 스타일
-├── js/
-│   ├── lib/
-│   │   └── jszip.min.js    # 클라이언트 사이드 ZIP 압축 라이브러리
-│   ├── config.js           # API 엔드포인트 및 가성비 모델 목록 설정
-│   ├── speech.js           # Web Speech API 기반 음성 인식(STT) 모듈
-│   ├── ai-service.js       # 백엔드 API 연동 모듈
-│   ├── invoice-manager.js  # 견적서 렌더링, 인라인 편집, 수식/한글금액 연산, CSV 내보내기
-│   ├── hwpx-generator.js   # 한글 표준 HWPX(OWPML) 생성 및 다운로드 엔진
-│   └── app.js              # 메인 컨트롤러 및 이벤트 핸들러
-└── assets/
-    └── hwpx-template/      # 한컴 공식 OWPML 표준 메타 템플릿
+├── public/                 # Vercel CDN 및 정적 웹 호스팅 최적화 디렉토리
+│   ├── index.html          # 메인 웹 진입점
+│   ├── css/
+│   │   ├── style.css       # 메인 UI 테마 스타일
+│   │   └── invoice.css     # 견적서 A4 인쇄/화면 표준 서식
+│   ├── js/
+│   │   ├── lib/jszip.min.js# ZIP 압축 라이브러리
+│   │   ├── config.js       # 전역 설정 및 모델 목록
+│   │   ├── speech.js       # 음성인식(STT)
+│   │   ├── ai-service.js   # 백엔드 API 연동 모듈
+│   │   ├── invoice-manager.js # 견적서 연산 및 렌더링
+│   │   ├── hwpx-generator.js  # HWPX 생성기
+│   │   └── app.js          # 컨트롤러
+│   └── assets/
+│       └── hwpx-template/  # HWPX 표준 템플릿
 ```
 
 ---

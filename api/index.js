@@ -5,10 +5,13 @@
 
 require('dotenv').config();
 const express = require('express');
+const path = require('path');
 
 const app = express();
 
 app.use(express.json());
+// 정적 파일 서빙 fallback (public 디렉토리 연동)
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // 1. 서버 상태 및 환경변수 설정 여부 확인 엔드포인트
 app.get('/api/status', (req, res) => {
